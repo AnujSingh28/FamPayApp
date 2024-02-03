@@ -1,0 +1,43 @@
+# Backend Assignment | FamPay
+
+## Project Overview
+This project aims to create an API for fetching the latest videos from YouTube based on a predefined search query/tag. The fetched videos are stored in a database with relevant information such as video title, description, publishing datetime, thumbnail URLs, etc. Users can retrieve the stored video data, search for videos by title and description, and access the API endpoints in a paginated response.
+
+## Features
+- Continuously fetches the latest videos from YouTube using the YouTube API with a configurable interval.
+- Stores video data in a database with proper indexing.
+- Provides endpoints for retrieving stored video data, searching videos by title and description, and accessing paginated responses.
+- Dockerized for easy deployment and scalability.
+
+## Technologies Used
+- Go (Golang) - Backend language
+- Gin - HTTP web framework
+- PostgreSQL - Database for storing video data
+- Docker - Containerization for deployment
+- YouTube Data API v3 - For fetching video data from YouTube
+- go-redis - Redis client for caching
+- goroutine - For handling asynchronous background tasks
+
+## Setup Instructions
+1. Clone the repository:
+   ```
+   git clone https://github.com/AnujSingh28/FamPayApp.git
+   ```
+
+2. Build and run the Docker container:
+   ```
+   docker-compose up --build
+   ```
+
+3. Access the API endpoints:
+   - The API endpoints will be available at `http://localhost:8080`.
+
+## API Endpoints
+1. GET `/allVideos`: Retrieve stored video data in a paginated response sorted by publishing datetime in descending order.
+   ```
+   curl --location 'http://localhost:8080/allVideos?page=1&recordsPerPage=8'
+   ```
+2. GET `/getVideo`: Search stored video by title.
+   ```
+   curl --location 'http://localhost:8080/getVideo?slug=India'
+   ```
