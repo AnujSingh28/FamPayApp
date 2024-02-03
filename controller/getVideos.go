@@ -97,14 +97,15 @@ func fetchYouTubeData() (videos []model.YoutubeVideo){
 	call := service.Search.List([]string{"snippet"}).Q(category).Type("video").MaxResults(10)
 	response, err := call.Do()
 	if err != nil {
-		log.Println("Failed to fetch YouTube videos")
+		log.Println("Failed to fetch YouTube videos", err, "--------", response)
 		return
 	}
 
 	// Extract relevant data from the API response
 	for _, item := range response.Items {
-		timeLayout := "2006-01-02T15:04:05.000Z"
-		parsedTime, _ := time.Parse(timeLayout, item.Snippet.PublishedAt)
+		//published at time layout : "2006-01-02T15:04:05.000Z"
+		parsedTime, errr := time.Parse(time.RFC3339, item.Snippet.PublishedAt)
+		log.Println("original time: ", item.Snippet.PublishedAt, "------", parsedTime, "-----------", errr)
 		video := model.YoutubeVideo{
 			Category:       category,
 			Title:          item.Snippet.Title,
