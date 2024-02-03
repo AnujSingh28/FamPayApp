@@ -37,7 +37,7 @@ This project aims to create an API for fetching the latest videos from YouTube b
    ```
    curl --location 'http://localhost:8080/allVideos?page=1&recordsPerPage=8'
    ```
-2. GET `/getVideo`: Search stored video by title.
+2. GET `/getVideo`: Search stored video by search slug.
    ```
    curl --location 'http://localhost:8080/getVideo?slug=India'
    ```
