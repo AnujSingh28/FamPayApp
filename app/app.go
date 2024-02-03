@@ -28,12 +28,12 @@ func (a *App) CreateRoutes() {
 	routes := gin.Default()
 	controller := controller.NewYoutubeVideoController(a.DB)
 	routes.GET("/getVideo", controller.GetYoutubeVideo)
-	//routes.GET("/fetchVideo", controller.FetchYoutubeVideos)
 	routes.GET("/allVideos", controller.GetAllYoutubeVideos)
 	a.Routes = routes
 }
 
 func (a *App) StartCronJob() *cron.Cron {
+	// Run the cron job to fetch youtube data every minute
 	c := cron.New()
 	_, err := c.AddFunc("* * * * *", func() {
 		controller := controller.NewYoutubeVideoController(a.DB)

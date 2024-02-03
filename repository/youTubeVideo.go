@@ -30,6 +30,7 @@ func (m *YoutubeVideoRepository) InsertYoutubeVideo(videos []model.YoutubeVideo)
 }
 // GetAllYoutubeVideos implements YoutubeVideoRepositoryInterface
 func (m *YoutubeVideoRepository) GetAllYoutubeVideos() (videos []contracts.GetVideoResponse, err error) {
+	// Fetches all videos in database
 	row, err := m.DB.Query("SELECT title, description, video_link, published_at, thumbnail FROM youtube_video ORDER BY published_at DESC")
 	if err != nil {
 		log.Println(err)
@@ -56,8 +57,9 @@ func (m *YoutubeVideoRepository) GetAllYoutubeVideos() (videos []contracts.GetVi
 }
 
 // SearchYoutubeVideo implements YoutubeVideoRepositoryInterface
-func (m *YoutubeVideoRepository) SearchYoutubeVideo(title, description string) (video contracts.GetVideoResponse) {
-	row, err := m.DB.Query("SELECT title, description, video_link, published_at, thumbnail FROM youtube_video WHERE title = $1 and description = $2", title, description)
+func (m *YoutubeVideoRepository) SearchYoutubeVideo(slug string) (videos []contracts.GetVideoResponse) {
+	// fetches videos having slug in their title or description
+	row, err := m.DB.Query("SELECT title, description, video_link, published_at, thumbnail FROM youtube_video WHERE title LIKE '%' || $1 || '%' OR description LIKE '%' || $2 || '%'", slug, slug)
 	if err != nil {
 		log.Println(err)
 		return
@@ -75,7 +77,8 @@ func (m *YoutubeVideoRepository) SearchYoutubeVideo(title, description string) (
 		if err != nil {
 			log.Println(err)
 		} else {
-			video = contracts.GetVideoResponse{Title: title, Description: description, VideoLink: video_link, PublishedAt: published_at, Thumbnail: thumbnail}
+			video := contracts.GetVideoResponse{Title: title, Description: description, VideoLink: video_link, PublishedAt: published_at, Thumbnail: thumbnail}
+			videos = append(videos, video)
 		}
 	}
 	return

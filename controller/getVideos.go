@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"FamPayApp/constants"
 	"FamPayApp/model"
 	"FamPayApp/repository"
 	"FamPayApp/utils"
@@ -26,23 +27,24 @@ func NewYoutubeVideoController(db *sql.DB) YoutubeVideoControllerInterface {
 
 // GetYoutubeVideo implements YoutubeVideoControllerInterface
 func (m *YoutubeVideoController) GetYoutubeVideo(g *gin.Context) {
-	title := g.Query("title")
-	description := g.Query("description")
-	if title == "" {
+	// Get videos having slug in their title or description
+	slug := g.Query("slug")
+	if slug == "" {
 		g.JSON(400, gin.H{"msg": "Title can not be null"})
 	}
 	db := m.DB
 	youtubeRepo := repository.NewYoutubeVideoRepository(db)
-	video := youtubeRepo.SearchYoutubeVideo(title, description)
-	if video.Title == "" {
+	videos := youtubeRepo.SearchYoutubeVideo(slug)
+	if len(videos) == 0 {
 		log.Println("No video exists")
-		g.JSON(200, gin.H{"status": "success", "data": nil, "msg": "No such video exists"})
+		g.JSON(500, gin.H{"status": "success", "data": nil, "msg": "No video exists"})
 		return
 	}
-	g.JSON(200, gin.H{"status": "success", "data": video, "msg": "GetYoutubeVideo Successful"})
+	g.JSON(200, gin.H{"status": "success", "data": videos, "msg": "GetYoutubeVideo Successful"})
 }
 
 func (m *YoutubeVideoController) GetAllYoutubeVideos(g *gin.Context){
+	// Gives out all stored video data in paginated form
 	page := g.Query("page")
 	if page == "" {
 		g.JSON(400, gin.H{"msg": "page can not be null"})
@@ -87,25 +89,26 @@ func (m *YoutubeVideoController) FetchYoutubeVideos(g *gin.Context) {
 }
 
 func fetchYouTubeData() (videos []model.YoutubeVideo){
-	service, err := youtube.NewService(context.Background(), option.WithAPIKey("AIzaSyBS2HIC7Cz3rtM7Iv8R6vhsefzWSMCAx0c"))
+	service, err := youtube.NewService(context.Background(), option.WithAPIKey(constants.GCPApiKey))
 	if err != nil {
 		log.Println("Failed to create YouTube client")
 		return
 	}
 
-	category := "cricket"
+	// Concatenating random slug with the category to fetch new videos everytime
+	category := utils.CreateRandomSearchSlug("cricket")
+	//call := service.Search.List([]string{"snippet"}).Q(category).Type("video").PublishedAfter("2000-01-02T00:00:00Z").MaxResults(10)
 	call := service.Search.List([]string{"snippet"}).Q(category).Type("video").MaxResults(10)
 	response, err := call.Do()
 	if err != nil {
-		log.Println("Failed to fetch YouTube videos", err, "--------", response)
+		log.Println("Failed to fetch YouTube videos, error: ", err)
 		return
 	}
 
 	// Extract relevant data from the API response
 	for _, item := range response.Items {
 		//published at time layout : "2006-01-02T15:04:05.000Z"
-		parsedTime, errr := time.Parse(time.RFC3339, item.Snippet.PublishedAt)
-		log.Println("original time: ", item.Snippet.PublishedAt, "------", parsedTime, "-----------", errr)
+		parsedTime, _ := time.Parse(time.RFC3339, item.Snippet.PublishedAt)
 		video := model.YoutubeVideo{
 			Category:       category,
 			Title:          item.Snippet.Title,
@@ -120,6 +123,7 @@ func fetchYouTubeData() (videos []model.YoutubeVideo){
 	return
 }
 
+// filter out the data not currently present in the DB
 func findNewVideosOutOfFetched(db *sql.DB, fetchedVideos []model.YoutubeVideo) (newVideos []model.YoutubeVideo) {
 	youtubeRepo := repository.NewYoutubeVideoRepository(db)
 	for _, fetchedVideo := range fetchedVideos {

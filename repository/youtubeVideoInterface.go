@@ -6,7 +6,7 @@ import (
 )
 
 type YoutubeVideoRepositoryInterface interface {
-	SearchYoutubeVideo(title, description string) contracts.GetVideoResponse
+	SearchYoutubeVideo(slug string) []contracts.GetVideoResponse
 	InsertYoutubeVideo(post []model.YoutubeVideo) error
 	GetAllYoutubeVideos() ([]contracts.GetVideoResponse, error)
 	GetYoutubeVideoByVideoId(videoId string) (video model.YoutubeVideo)
