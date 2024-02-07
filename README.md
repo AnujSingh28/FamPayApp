@@ -15,8 +15,6 @@ This project aims to create an API for fetching the latest videos from YouTube b
 - PostgreSQL - Database for storing video data
 - Docker - Containerization for deployment
 - YouTube Data API v3 - For fetching video data from YouTube
-- go-redis - Redis client for caching
-- goroutine - For handling asynchronous background tasks
 
 ## Setup Instructions
 1. Clone the repository:
@@ -33,11 +31,14 @@ This project aims to create an API for fetching the latest videos from YouTube b
    - The API endpoints will be available at `http://localhost:8080`.
 
 ## API Endpoints
-1. GET `/allVideos`: Retrieve stored video data in a paginated response sorted by publishing datetime in descending order.
+1. A cron job has been set up to fetch YouTube videos without relying on an external API trigger. This job runs every minute, retrieving video details and storing them in the database. The decision to run it at one-minute intervals was made due to the limitations of the YouTube Data v3 API, which imposes a daily threshold.
+   - Using my API key for the purpose.
+   - Can be changed if needed. `./constants/common.go GCPApiKey`
+3. GET `/allVideos`: Retrieve stored video data in a paginated response sorted by publishing datetime in descending order.
    ```
    curl --location 'http://localhost:8080/allVideos?page=1&recordsPerPage=8'
    ```
-2. GET `/getVideo`: Search stored video by search slug.
+4. GET `/getVideo`: Search stored video by search slug.
    ```
    curl --location 'http://localhost:8080/getVideo?slug=India'
    ```
